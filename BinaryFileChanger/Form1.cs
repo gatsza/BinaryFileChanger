@@ -224,7 +224,13 @@ namespace WindowsFormsApp1
             }
 
             text.SelectionLength = 0;
-            text.SelectionStart = cursorIndex - (textLong - text.Text.Count());
+
+            int nextCursor = cursorIndex - (textLong - text.Text.Count());
+
+            if (nextCursor < 0)
+                text.SelectionStart = 0;
+            else
+                text.SelectionStart = nextCursor;
 
         }
 
@@ -239,26 +245,33 @@ namespace WindowsFormsApp1
 
             if (combo.Name.Contains("addressType") & addressText[lineNum].Text != "")
             {
-
-                if ("HEX" == combo.SelectedItem)
+                try
                 {
-                    if (prevAdrType[lineNum] != "HEX")
+                    if ("HEX" == combo.SelectedItem)
                     {
-                        addressText[lineNum].Text = dec2Hex(addressText[lineNum].Text);
-                    }
-                }
-                else
-                {
-                    if ("DEC" == combo.SelectedItem)
-                    {
-                        if (prevAdrType[lineNum] != "DEC")
+                        if (prevAdrType[lineNum] != "HEX")
                         {
-                            addressText[lineNum].Text = hex2Dec(addressText[lineNum].Text);
+                            addressText[lineNum].Text = dec2Hex(addressText[lineNum].Text);
                         }
                     }
+                    else
+                    {
+                        if ("DEC" == combo.SelectedItem)
+                        {
+                            if (prevAdrType[lineNum] != "DEC")
+                            {
+                                addressText[lineNum].Text = hex2Dec(addressText[lineNum].Text);
+                            }
+                        }
 
+                    }
+                    prevAdrType[lineNum] = combo.SelectedItem.ToString();
                 }
-                prevAdrType[lineNum] = combo.SelectedItem.ToString();
+                catch(OverflowException)
+                {
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) +". sorban a címnél");
+                    combo.SelectedItem = prevAdrType[lineNum];
+                }
             }
         }
 
@@ -316,9 +329,14 @@ namespace WindowsFormsApp1
                         break;
                 }
             }
-           
-            text.SelectionLength = 0;
-            text.SelectionStart = cursorIndex - (textLong - text.Text.Count());
+
+
+            int nextCursor = cursorIndex - (textLong - text.Text.Count());
+
+            if (nextCursor < 0)
+                text.SelectionStart = 0;
+            else
+                text.SelectionStart = nextCursor;
 
             lenText[lineNum].Text = text.Text.Count().ToString();
         }
@@ -334,52 +352,60 @@ namespace WindowsFormsApp1
 
             if (combo.Name.Contains("dataType"))
             {
-                switch(combo.SelectedItem)
+                try
                 {
-                    case "ASCII":
-                        if(prevDataType[lineNum] != "ASCII")
-                        {
-                            if(prevDataType[lineNum] == "HEX")
+                    switch (combo.SelectedItem)
+                    {
+                        case "ASCII":
+                            if (prevDataType[lineNum] != "ASCII")
                             {
-                                dataText[lineNum].Text = hex2ASCII(dataText[lineNum].Text);
+                                if (prevDataType[lineNum] == "HEX")
+                                {
+                                    dataText[lineNum].Text = hex2ASCII(dataText[lineNum].Text);
+                                }
+                                else
+                                {
+                                    dataText[lineNum].Text = dec2ASCII(dataText[lineNum].Text);
+                                }
                             }
-                            else
-                            {
-                                dataText[lineNum].Text = dec2ASCII(dataText[lineNum].Text);
-                            }
-                        }
-                        break;
+                            break;
 
-                    case "HEX":
-                        if (prevDataType[lineNum] != "HEX")
-                        {
-                            if (prevDataType[lineNum] == "DEC")
+                        case "HEX":
+                            if (prevDataType[lineNum] != "HEX")
                             {
-                                dataText[lineNum].Text = dec2Hex(dataText[lineNum].Text);
+                                if (prevDataType[lineNum] == "DEC")
+                                {
+                                    dataText[lineNum].Text = dec2Hex(dataText[lineNum].Text);
+                                }
+                                else
+                                {
+                                    dataText[lineNum].Text = ASCII2Hex(dataText[lineNum].Text);
+                                }
                             }
-                            else
-                            {
-                                dataText[lineNum].Text = ASCII2Hex(dataText[lineNum].Text);
-                            }
-                        }
-                        break;
+                            break;
 
-                    case "DEC":
-                        if (prevDataType[lineNum] != "DEC")
-                        {
-                            if (prevDataType[lineNum] == "HEX")
+                        case "DEC":
+                            if (prevDataType[lineNum] != "DEC")
                             {
-                                dataText[lineNum].Text = hex2Dec(dataText[lineNum].Text);
+                                if (prevDataType[lineNum] == "HEX")
+                                {
+                                    dataText[lineNum].Text = hex2Dec(dataText[lineNum].Text);
+                                }
+                                else
+                                {
+                                    dataText[lineNum].Text = ASCII2Dec(dataText[lineNum].Text);
+                                }
                             }
-                            else
-                            {
-                                dataText[lineNum].Text = ASCII2Dec(dataText[lineNum].Text);
-                            }
-                        }
-                        break;
+                            break;
+                    }
+
+                    prevDataType[lineNum] = combo.SelectedItem.ToString();
                 }
-
-                prevDataType[lineNum] = combo.SelectedItem.ToString();
+                catch (OverflowException)
+                {
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban az adatnál");
+                    combo.SelectedItem = prevDataType[lineNum];
+                }
             }
 
         }
@@ -393,14 +419,14 @@ namespace WindowsFormsApp1
         protected string hex2Dec(string HexText)
         {
             string hexValue = HexText;
-            int decNum = int.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
+            uint decNum = uint.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
             return decNum.ToString();
         }
 
         protected string dec2Hex(string DecText)
         {
             string decValue = DecText;
-            int decNum = int.Parse(decValue);
+            uint decNum = uint.Parse(decValue);
             return decNum.ToString("X");
         }
 
@@ -415,7 +441,7 @@ namespace WindowsFormsApp1
             {
                 string sub = hexText.Substring(i, 2);
 
-                int hexData = int.Parse(sub, System.Globalization.NumberStyles.HexNumber);
+                uint hexData = uint.Parse(sub, System.Globalization.NumberStyles.HexNumber);
 
                 ASCIIdata += Convert.ToChar(hexData).ToString();
             }
@@ -424,12 +450,12 @@ namespace WindowsFormsApp1
 
         protected string dec2ASCII(string DecText)
         {
-            int decData = int.Parse(DecText);
+            uint decData = uint.Parse(DecText);
             string asciiData = "";
 
             while(decData != 0)
             {
-                int character = decData % 256;
+                uint character = decData % 256;
                 asciiData = Convert.ToChar(character).ToString() + asciiData;
 
                 decData /= 256;
@@ -440,11 +466,11 @@ namespace WindowsFormsApp1
 
         protected string ASCII2Dec(string ASCIIData)
         {
-            int decData = 0;
+            uint decData = 0;
 
             foreach (char _eachChar in ASCIIData)
             {
-                int value = Convert.ToInt32(_eachChar);
+                uint value = Convert.ToUInt32(_eachChar);
                 decData = decData * 256 + value ;
             }
 
@@ -457,7 +483,7 @@ namespace WindowsFormsApp1
 
             foreach (char _eachChar in ASCIIData)
             {
-                int value = Convert.ToInt32(_eachChar);
+                uint value = Convert.ToUInt32(_eachChar);
                 hexData += value.ToString("X");
             }
             return hexData;
@@ -604,15 +630,15 @@ namespace WindowsFormsApp1
             for (int i = 0; i < panelSize; i++)
             {
                 String value = addressText[i].Text;
-                int changeAddress = 0;
+                uint changeAddress = 0;
                 if (value != "")
                 {
                     if ("HEX" == addressType[i].SelectedItem)
-                        changeAddress = int.Parse(value, System.Globalization.NumberStyles.HexNumber);
+                        changeAddress = uint.Parse(value, System.Globalization.NumberStyles.HexNumber);
                     else
                     {
                         if ("DEC" == addressType[i].SelectedItem)
-                            changeAddress = int.Parse(value);
+                            changeAddress = uint.Parse(value);
                     }
                 }
 
