@@ -208,7 +208,7 @@ namespace WindowsFormsApp1
             int cursorIndex = text.SelectionStart;
             int textLong = text.Text.Count();
 
-            if (name.Contains("addressText"))
+            if (name.Contains("addressText") & text.Text != "")
             {
                 try
                 {
@@ -322,7 +322,7 @@ namespace WindowsFormsApp1
             int cursorIndex = text.SelectionStart;
             int textLong = text.Text.Count();
 
-            if (name.Contains("dataText"))
+            if (name.Contains("dataText") & text.Text != "")
             {
                 try
                 {
@@ -330,16 +330,19 @@ namespace WindowsFormsApp1
                     {
                         case "HEX":
                             text.Text = Regex.Replace(text.Text, @"[^A-Fa-f0-9]", new MatchEvaluator(WrongValue));
+                            lenText[lineNum].Text = (text.Text.Count() / 2 + text.Text.Count() % 2).ToString();
                             uint.Parse(text.Text, System.Globalization.NumberStyles.HexNumber);
                             break;
 
                         case "DEC":
                             text.Text = Regex.Replace(text.Text, @"[^\d]", new MatchEvaluator(WrongValue));
+                            lenText[lineNum].Text = "4";
                             uint.Parse(text.Text);
                             break;
 
                         case "ASCII":
                             text.Text = Regex.Replace(text.Text, @"[^A-Za-z]", new MatchEvaluator(WrongValue));
+                            lenText[lineNum].Text = text.Text.Count().ToString();
                             break;
                     }
                     SaveButton.Enabled = true;
@@ -350,7 +353,13 @@ namespace WindowsFormsApp1
                     SaveButton.Enabled = false;
                 }
             }
+            else
+            {
+                SaveButton.Enabled = true;
 
+                if (text.Text == "")
+                    lenText[lineNum].Text = "0";
+            }
 
             int nextCursor = cursorIndex - (textLong - text.Text.Count());
 
@@ -358,8 +367,6 @@ namespace WindowsFormsApp1
                 text.SelectionStart = 0;
             else
                 text.SelectionStart = nextCursor;
-
-            lenText[lineNum].Text = text.Text.Count().ToString();
         }
 
         private void dataComboBox_SelectedIndexChanged(object sender, EventArgs e)
