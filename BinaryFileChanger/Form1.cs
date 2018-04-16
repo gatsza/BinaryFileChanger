@@ -21,6 +21,7 @@ namespace WindowsFormsApp1
     {
 
         private byte[] buffer = new byte[128 * 1024];
+        private List<string> error = new List<string>();
         private int bytesread = 0;
         string path;
         string pathOfExcel;
@@ -46,6 +47,7 @@ namespace WindowsFormsApp1
             InitializeComponent();
 
             path = Environment.CurrentDirectory;
+            error.Add(browserButton.Name);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -179,22 +181,32 @@ namespace WindowsFormsApp1
 
         private void browserText_TextChanged(object sender, EventArgs e)
         {
-            String Filename = browserText.Text;
+            TextBox text = sender as TextBox;
+            String Filename = text.Text;
 
 
             if (File.Exists(Filename))
             {
                 if (Path.GetExtension(Filename) == ".bin")
                 {
-                    SaveButton.Enabled = true;
+                    error.Remove(text.Name);
+
+                    if(error.Count() == 0)
+                        SaveButton.Enabled = true;
                 }
                 else
                 {
+                    if (error.IndexOf(text.Name) == -1)
+                        error.Add(text.Name);
+
                     SaveButton.Enabled = false;
                 }
             }
             else
             {
+                if (error.IndexOf(text.Name) == -1)
+                    error.Add(text.Name);
+
                 SaveButton.Enabled = false;
             }
         }
@@ -227,13 +239,22 @@ namespace WindowsFormsApp1
                             uint.Parse(text.Text);
                             break;
                     }
-                    SaveButton.Enabled = true;
+                    if (error.Count() == 0)
+                        SaveButton.Enabled = true;
                 }
                 catch (OverflowException)
                 {
                     MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban a címnél");
+                    if (error.IndexOf(text.Name) == -1)
+                        error.Add(text.Name);
+
                     SaveButton.Enabled = false;
                 }
+            }
+            else
+            {
+                if (error.Count() == 0)
+                    SaveButton.Enabled = true;
             }
 
             text.SelectionLength = 0;
@@ -282,7 +303,7 @@ namespace WindowsFormsApp1
                 }
                 catch (OverflowException)
                 {
-                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban a címnél");
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban a címnél, nem lehet átváltani");
                     combo.SelectedItem = prevAdrType[lineNum];
                 }
             }
@@ -348,17 +369,22 @@ namespace WindowsFormsApp1
                             lenText[lineNum].Text = text.Text.Count().ToString();
                             break;
                     }
-                    SaveButton.Enabled = true;
+                    if (error.Count() == 0)
+                        SaveButton.Enabled = true;
                 }
                 catch (OverflowException)
                 {
-                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban a címnél");
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban az adatnál");
+                    if (error.IndexOf(text.Name) == -1)
+                        error.Add(text.Name);
+
                     SaveButton.Enabled = false;
                 }
             }
             else
             {
-                SaveButton.Enabled = true;
+                if (error.Count() == 0)
+                    SaveButton.Enabled = true;
 
                 if (text.Text == "")
                     lenText[lineNum].Text = "0";
