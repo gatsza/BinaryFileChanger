@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using System.Runtime.InteropServices;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Media;
@@ -45,7 +46,7 @@ namespace WindowsFormsApp1
         }
 
         private void Form1_Load(object sender, EventArgs e)
-        { 
+        {
             new_delBut(0);
             new_addrText(0);
             new_addrType(0);
@@ -61,6 +62,8 @@ namespace WindowsFormsApp1
             Panel1.Controls.Add(dataType[0], 5, 0);
         }
 
+        // new elements creation functions
+
         private void new_delBut(int row)
         {
             delButt[row] = new Button();
@@ -68,7 +71,7 @@ namespace WindowsFormsApp1
             delButt[row].Name = "delbut" + row.ToString();
             delButt[row].Text = "-";
             delButt[row].Dock = DockStyle.Top;
-            delButt[row].Click += new EventHandler(delButtonClick);
+            delButt[row].Click += new EventHandler(delButton_Click);
         }
 
         private void new_addrText(int row)
@@ -96,7 +99,7 @@ namespace WindowsFormsApp1
 
         private void new_lenText(int row)
         {
-            lenText [row] = new TextBox();
+            lenText[row] = new TextBox();
 
             lenText[row].Name = "lenText" + row.ToString();
             lenText[row].Text = "0";
@@ -130,6 +133,8 @@ namespace WindowsFormsApp1
 
         }
 
+        // Event Handler functions
+
         private void browserButton_Click(object sender, EventArgs e)
         {
 
@@ -145,7 +150,7 @@ namespace WindowsFormsApp1
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 try
-                { 
+                {
 
                     if ((myStream = File.Open(browserText.Text = openFileDialog1.FileName, FileMode.Open, FileAccess.Read)) != null)
                     {
@@ -157,7 +162,7 @@ namespace WindowsFormsApp1
 
                     myStream.Close();
 
-                    if(buffer.Count() > 0)
+                    if (buffer.Count() > 0)
                         browserText.Text = openFileDialog1.FileName;
 
                 }
@@ -172,7 +177,7 @@ namespace WindowsFormsApp1
         private void browserText_TextChanged(object sender, EventArgs e)
         {
             String Filename = browserText.Text;
-           
+
 
             if (File.Exists(Filename))
             {
@@ -191,13 +196,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        private string WrongValue(Match m)
-        {
-            SystemSounds.Beep.Play();
-            return "";
-        }
-
-        protected void addressTxtBox_TextChanged(object sender, EventArgs e)
+        private void addressTxtBox_TextChanged(object sender, EventArgs e)
         {
             TextBox text = sender as TextBox;
             String name = text.Name;
@@ -211,15 +210,26 @@ namespace WindowsFormsApp1
 
             if (name.Contains("addressText"))
             {
-                switch (addressType[lineNum].SelectedItem)
+                try
                 {
-                    case "HEX":
-                        text.Text = Regex.Replace(text.Text, @"[^A-Fa-f0-9]", new MatchEvaluator(WrongValue));
-                        break;
+                    switch (addressType[lineNum].SelectedItem)
+                    {
+                        case "HEX":
+                            text.Text = Regex.Replace(text.Text, @"[^A-Fa-f0-9]", new MatchEvaluator(WrongValue));
+                            uint.Parse(text.Text, System.Globalization.NumberStyles.HexNumber);
+                            break;
 
-                    case "DEC":
-                        text.Text = Regex.Replace(text.Text, @"[^\d]", new MatchEvaluator(WrongValue));
-                        break;
+                        case "DEC":
+                            text.Text = Regex.Replace(text.Text, @"[^\d]", new MatchEvaluator(WrongValue));
+                            uint.Parse(text.Text);
+                            break;
+                    }
+                    SaveButton.Enabled = true;
+                }
+                catch (OverflowException)
+                {
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban a címnél");
+                    SaveButton.Enabled = false;
                 }
             }
 
@@ -234,7 +244,7 @@ namespace WindowsFormsApp1
 
         }
 
-        protected void addressComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void addressComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox combo = sender as ComboBox;
 
@@ -267,15 +277,15 @@ namespace WindowsFormsApp1
                     }
                     prevAdrType[lineNum] = combo.SelectedItem.ToString();
                 }
-                catch(OverflowException)
+                catch (OverflowException)
                 {
-                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) +". sorban a címnél");
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban a címnél");
                     combo.SelectedItem = prevAdrType[lineNum];
                 }
             }
         }
 
-        protected void lenTxtBox_TextChanged(object sender, EventArgs e)
+        private void lenTxtBox_TextChanged(object sender, EventArgs e)
         {
             TextBox text = sender as TextBox;
             String name = text.Name;
@@ -297,36 +307,47 @@ namespace WindowsFormsApp1
 
             if (string.IsNullOrEmpty(text.Text))
                 text.Text = "0";
-           
+
         }
 
-        protected void dataTxtBox_TextChanged(object sender, EventArgs e)
+        private void dataTxtBox_TextChanged(object sender, EventArgs e)
         {
             TextBox text = sender as TextBox;
             String name = text.Name;
 
             if (text == null)
                 return;
-           
+
             int lineNum = GetRow(text.Name);
             int cursorIndex = text.SelectionStart;
             int textLong = text.Text.Count();
 
             if (name.Contains("dataText"))
             {
-                switch (dataType[lineNum].SelectedItem)
+                try
                 {
-                    case "HEX":
-                        text.Text = Regex.Replace(text.Text, @"[^A-Fa-f0-9]", new MatchEvaluator(WrongValue));
-                        break;
+                    switch (dataType[lineNum].SelectedItem)
+                    {
+                        case "HEX":
+                            text.Text = Regex.Replace(text.Text, @"[^A-Fa-f0-9]", new MatchEvaluator(WrongValue));
+                            uint.Parse(text.Text, System.Globalization.NumberStyles.HexNumber);
+                            break;
 
-                    case "DEC":
-                        text.Text = Regex.Replace(text.Text, @"[^\d]", new MatchEvaluator(WrongValue));
-                        break;
+                        case "DEC":
+                            text.Text = Regex.Replace(text.Text, @"[^\d]", new MatchEvaluator(WrongValue));
+                            uint.Parse(text.Text);
+                            break;
 
-                    case "ASCII":
-                        text.Text = Regex.Replace(text.Text, @"[^A-Za-z]", new MatchEvaluator(WrongValue));
-                        break;
+                        case "ASCII":
+                            text.Text = Regex.Replace(text.Text, @"[^A-Za-z]", new MatchEvaluator(WrongValue));
+                            break;
+                    }
+                    SaveButton.Enabled = true;
+                }
+                catch (OverflowException)
+                {
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban a címnél");
+                    SaveButton.Enabled = false;
                 }
             }
 
@@ -341,7 +362,7 @@ namespace WindowsFormsApp1
             lenText[lineNum].Text = text.Text.Count().ToString();
         }
 
-        protected void dataComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void dataComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox combo = sender as ComboBox;
 
@@ -350,7 +371,7 @@ namespace WindowsFormsApp1
 
             int lineNum = GetRow(combo.Name);
 
-            if (combo.Name.Contains("dataType"))
+            if (combo.Name.Contains("dataType") & dataText[lineNum].Text != "")
             {
                 try
                 {
@@ -410,86 +431,7 @@ namespace WindowsFormsApp1
 
         }
 
-        protected int GetRow(string Name)
-        {
-            String num = Regex.Match(Name, @"\d+").Value;
-            return Int32.Parse(num);
-        }
-
-        protected string hex2Dec(string HexText)
-        {
-            string hexValue = HexText;
-            uint decNum = uint.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
-            return decNum.ToString();
-        }
-
-        protected string dec2Hex(string DecText)
-        {
-            string decValue = DecText;
-            uint decNum = uint.Parse(decValue);
-            return decNum.ToString("X");
-        }
-
-        protected string hex2ASCII(string hexText)
-        {
-            string ASCIIdata = "";
-
-            if (hexText.Length % 2 == 1)
-                hexText = "0" + hexText;
-
-            for(int i = 0; i < hexText.Length; i = i + 2)
-            {
-                string sub = hexText.Substring(i, 2);
-
-                uint hexData = uint.Parse(sub, System.Globalization.NumberStyles.HexNumber);
-
-                ASCIIdata += Convert.ToChar(hexData).ToString();
-            }
-            return ASCIIdata;
-        }
-
-        protected string dec2ASCII(string DecText)
-        {
-            uint decData = uint.Parse(DecText);
-            string asciiData = "";
-
-            while(decData != 0)
-            {
-                uint character = decData % 256;
-                asciiData = Convert.ToChar(character).ToString() + asciiData;
-
-                decData /= 256;
-            }
-
-            return asciiData;
-        }
-
-        protected string ASCII2Dec(string ASCIIData)
-        {
-            uint decData = 0;
-
-            foreach (char _eachChar in ASCIIData)
-            {
-                uint value = Convert.ToUInt32(_eachChar);
-                decData = decData * 256 + value ;
-            }
-
-            return decData.ToString();
-        }
-
-        protected string ASCII2Hex(string ASCIIData)
-        {
-            string hexData = "";
-
-            foreach (char _eachChar in ASCIIData)
-            {
-                uint value = Convert.ToUInt32(_eachChar);
-                hexData += value.ToString("X");
-            }
-            return hexData;
-        }
-
-        protected void delButtonClick(object sender, EventArgs e)
+        private void delButton_Click(object sender, EventArgs e)
         {
             Button button = sender as Button;
             String name = button.Name;
@@ -497,77 +439,23 @@ namespace WindowsFormsApp1
             if (button == null)
                 return;
 
-            if(name.Contains("delbut"))
+            if (name.Contains("delbut"))
             {
                 int lineNum = GetRow(button.Name);
 
                 deleteRow(lineNum);
             }
-            
+
         }
 
-        private void deleteRow(int row)
-        {
-            int panelSize = Panel1.RowCount;
-
-            
-                for (int i = 0; i < panelSize - 1; i++)
-                {
-                    if (i >= row)
-                    {
-                        addressText[i].Text = addressText[i + 1].Text;
-                        addressType[i].SelectedItem = addressType[i + 1].SelectedItem;
-                        lenText[i].Text = lenText[i + 1].Text;
-                        dataText[i].Text = dataText[i + 1].Text;
-                        dataType[i].SelectedItem = dataType[i + 1].SelectedItem;
-                    }
-
-                }
-
-            if (panelSize != 1)
-            {
-
-                Panel1.Controls.RemoveByKey("delbut" + (panelSize - 1).ToString());
-                Panel1.Controls.RemoveByKey("addressText" + (panelSize - 1).ToString());
-                Panel1.Controls.RemoveByKey("addressType" + (panelSize - 1).ToString());
-                Panel1.Controls.RemoveByKey("lenText" + (panelSize - 1).ToString());
-                Panel1.Controls.RemoveByKey("dataText" + (panelSize - 1).ToString());
-                Panel1.Controls.RemoveByKey("dataType" + (panelSize - 1).ToString());
-
-                this.Height -= 32;
-                SaveButton.Location = new Point(SaveButton.Location.X, SaveButton.Location.Y - 32);
-                fileName.Location = new Point(fileName.Location.X, fileName.Location.Y - 32);
-                label7.Location = new Point(label7.Location.X, label7.Location.Y - 32);
-
-                Panel1.RowCount -= 1;
-                Panel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 31));
-                Panel1.Size = new Size(Panel1.Size.Width, Panel1.Size.Height - 32);
-
-            }
-            else
-            {
-                addressText[0].Text = "";
-                addressType[0].SelectedItem = 0;
-                lenText[0].Text = "";
-                dataText[0].Text = "";
-                dataType[0].SelectedItem = 0;
-            }
-        }
-
-        private void add_Click(object sender, EventArgs e)
+        private void addButton_Click(object sender, EventArgs e)
         {
             if (Panel1.RowCount != 10)
             {
-                this.Height += 32;
-                SaveButton.Location = new Point(SaveButton.Location.X, SaveButton.Location.Y + 32);
-                fileName.Location = new Point(fileName.Location.X, fileName.Location.Y + 32);
-                label7.Location = new Point(label7.Location.X, label7.Location.Y + 32);
 
                 int rowNum = Panel1.RowCount;
 
-                Panel1.RowCount = rowNum + 1;
-                Panel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 31));
-                Panel1.Size = new Size(Panel1.Size.Width, Panel1.Size.Height+32);
+                rowChange('+');
 
                 new_delBut(rowNum);
                 new_addrText(rowNum);
@@ -586,7 +474,7 @@ namespace WindowsFormsApp1
 
         }
 
-        private void SaveButton_Click(object sender, EventArgs e)
+        private void saveButton_Click(object sender, EventArgs e)
         {
             if (fileName.Text == "")
             {
@@ -596,7 +484,7 @@ namespace WindowsFormsApp1
 
             try
             {
-                if(!Directory.Exists(path + "\\binary\\"))
+                if (!Directory.Exists(path + "\\binary\\"))
                 {
                     Directory.CreateDirectory(path + "\\binary\\");
                 }
@@ -623,73 +511,266 @@ namespace WindowsFormsApp1
 
         }
 
+        private void excel_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            Excel.Application xlApp = new Excel.Application();
+
+
+            openFileDialog1.InitialDirectory = "c:\\";
+            openFileDialog1.Filter = "excel documentum (.xls)|*.xls|excel documentum (.xlsx)|*.xlsx";
+            openFileDialog1.FilterIndex = 2;
+            openFileDialog1.RestoreDirectory = true;
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                try
+                { 
+                    Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(openFileDialog1.FileName);
+                    if(xlWorkbook != null)
+                    {
+                        Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+                        Excel.Range xlRange = xlWorksheet.UsedRange;
+
+                        int rowCount = xlRange.Rows.Count;
+                        int colCount = xlRange.Columns.Count;
+
+                        MessageBox.Show("Megnyitás sikeres.");
+
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+
+                        Marshal.ReleaseComObject(xlRange);
+                        Marshal.ReleaseComObject(xlWorksheet);
+
+                        xlWorkbook.Close();
+                        Marshal.ReleaseComObject(xlWorkbook);
+
+                        xlApp.Quit();
+                        Marshal.ReleaseComObject(xlApp);
+
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                }
+            }
+        }
+        // Other functions
+
+        private string WrongValue(Match m)
+        {
+            SystemSounds.Beep.Play();
+            return "";
+        }
+
+        private void deleteRow(int row)
+        {
+            int panelSize = Panel1.RowCount;
+
+
+            for (int i = 0; i < panelSize - 1; i++)
+            {
+                if (i >= row)
+                {
+                    addressText[i].Text = addressText[i + 1].Text;
+                    addressType[i].SelectedItem = addressType[i + 1].SelectedItem;
+                    lenText[i].Text = lenText[i + 1].Text;
+                    dataText[i].Text = dataText[i + 1].Text;
+                    dataType[i].SelectedItem = dataType[i + 1].SelectedItem;
+                }
+
+            }
+
+            if (panelSize != 1)
+            {
+
+                Panel1.Controls.RemoveByKey("delbut" + (panelSize - 1).ToString());
+                Panel1.Controls.RemoveByKey("addressText" + (panelSize - 1).ToString());
+                Panel1.Controls.RemoveByKey("addressType" + (panelSize - 1).ToString());
+                Panel1.Controls.RemoveByKey("lenText" + (panelSize - 1).ToString());
+                Panel1.Controls.RemoveByKey("dataText" + (panelSize - 1).ToString());
+                Panel1.Controls.RemoveByKey("dataType" + (panelSize - 1).ToString());
+
+                rowChange('-');
+            }
+            else
+            {
+                addressText[0].Text = "";
+                addressType[0].SelectedItem = 0;
+                lenText[0].Text = "";
+                dataText[0].Text = "";
+                dataType[0].SelectedItem = 0;
+            }
+        }
+
+        private void rowChange(char direction)
+        {
+            int directionSign = 0;
+            if (direction == '+')
+                directionSign = 1;
+            else
+            {
+                if (direction == '-')
+                    directionSign = -1;
+            }
+
+            this.Height += 32 * directionSign;
+            SaveButton.Location = new Point(SaveButton.Location.X, SaveButton.Location.Y + 32 * directionSign);
+            fileName.Location = new Point(fileName.Location.X, fileName.Location.Y + 32 * directionSign);
+            label7.Location = new Point(label7.Location.X, label7.Location.Y + 32 * directionSign);
+
+            Panel1.RowCount += 1 * directionSign;
+            Panel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 31));
+            Panel1.Size = new Size(Panel1.Size.Width, Panel1.Size.Height + 32 * directionSign);
+        }
+
         private void changeFile()
         {
             int panelSize = Panel1.RowCount;
 
             for (int i = 0; i < panelSize; i++)
             {
-                String value = addressText[i].Text;
-                uint changeAddress = 0;
-                if (value != "")
+                uint changeAddress = 0
+                    ;
+                if (addressText[i].Text != "")
                 {
-                    if ("HEX" == addressType[i].SelectedItem)
-                        changeAddress = uint.Parse(value, System.Globalization.NumberStyles.HexNumber);
-                    else
-                    {
-                        if ("DEC" == addressType[i].SelectedItem)
-                            changeAddress = uint.Parse(value);
-                    }
+                    changeAddress = getAddress(i);
                 }
 
-                if ( lenText[i].Text != "")
+                if (lenText[i].Text != "")
                 {
                     int lenght = int.Parse(lenText[i].Text);
                     List<byte> data = new List<byte>();
 
-                    switch (dataType[i].SelectedItem)
-                    {
-                        case "HEX":
-                            int num1 = int.Parse(dataText[i].Text, System.Globalization.NumberStyles.HexNumber);
-                            data.AddRange(BitConverter.GetBytes(num1).Reverse().ToList());
-                            break;
+                    data.AddRange(getData(i));
 
-                        case "DEC":
-                            int num2 = int.Parse(dataText[i].Text);
-                            data.AddRange(BitConverter.GetBytes(num2).Reverse().ToList());
-                            break;
-
-                        case "ASCII":
-                            data.AddRange(Encoding.ASCII.GetBytes(dataText[i].Text).ToList());
-                            break;
-                    }
-                   
                     for (int j = 0; j < lenght; j++)
                     {
-                        if (lenght-j > data.Count )
+                        if (lenght - j > data.Count)
                         {
                             buffer[changeAddress + j] = 0;
                         }
                         else
                         {
-                            buffer[changeAddress + j] = data[j - (lenght - data.Count()) ];
+                            buffer[changeAddress + j] = data[j - (lenght - data.Count())];
                         }
                     }
                 }
             }
         }
 
-        private void excel_Click(object sender, EventArgs e)
+        private int GetRow(string Name)
         {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            Stream myStream = null;
-
-
-            openFileDialog1.InitialDirectory = "c:\\";
-            openFileDialog1.Filter = "";
-            openFileDialog1.FilterIndex = 2;
-            openFileDialog1.RestoreDirectory = true;
-
+            String num = Regex.Match(Name, @"\d+").Value;
+            return Int32.Parse(num);
         }
+
+        private uint getAddress(int row)
+        {
+            if ("HEX" == addressType[row].SelectedItem)
+                return uint.Parse(addressText[row].Text, System.Globalization.NumberStyles.HexNumber);
+            else
+                return uint.Parse(addressText[row].Text);
+        }
+
+        private List<byte> getData(int row)
+        {
+            switch (dataType[row].SelectedItem)
+            {
+                case "HEX":
+                    int num1 = int.Parse(dataText[row].Text, System.Globalization.NumberStyles.HexNumber);
+                    return BitConverter.GetBytes(num1).Reverse().ToList();
+
+                case "DEC":
+                    int num2 = int.Parse(dataText[row].Text);
+                    return BitConverter.GetBytes(num2).Reverse().ToList();
+
+                case "ASCII":
+                    return Encoding.ASCII.GetBytes(dataText[row].Text).ToList();
+
+                default:
+                    return null;
+            }
+        }
+
+        // Converter functions between types
+
+        private string hex2Dec(string HexText)
+        {
+            string hexValue = HexText;
+            uint decNum = uint.Parse(hexValue, System.Globalization.NumberStyles.HexNumber);
+            return decNum.ToString();
+        }
+
+        private string dec2Hex(string DecText)
+        {
+            string decValue = DecText;
+            uint decNum = uint.Parse(decValue);
+            return decNum.ToString("X");
+        }
+
+        private string hex2ASCII(string hexText)
+        {
+            string ASCIIdata = "";
+
+            if (hexText.Length % 2 == 1)
+                hexText = "0" + hexText;
+
+            for (int i = 0; i < hexText.Length; i = i + 2)
+            {
+                string sub = hexText.Substring(i, 2);
+
+                uint hexData = uint.Parse(sub, System.Globalization.NumberStyles.HexNumber);
+
+                ASCIIdata += Convert.ToChar(hexData).ToString();
+            }
+            return ASCIIdata;
+        }
+
+        private string dec2ASCII(string DecText)
+        {
+            uint decData = uint.Parse(DecText);
+            string asciiData = "";
+
+            while (decData != 0)
+            {
+                uint character = decData % 256;
+                asciiData = Convert.ToChar(character).ToString() + asciiData;
+
+                decData /= 256;
+            }
+
+            return asciiData;
+        }
+
+        private string ASCII2Dec(string ASCIIData)
+        {
+            uint decData = 0;
+
+            foreach (char _eachChar in ASCIIData)
+            {
+                uint value = Convert.ToUInt32(_eachChar);
+                decData = decData * 256 + value;
+            }
+
+            return decData.ToString();
+        }
+
+        private string ASCII2Hex(string ASCIIData)
+        {
+            string hexData = "";
+
+            foreach (char _eachChar in ASCIIData)
+            {
+                uint value = Convert.ToUInt32(_eachChar);
+                hexData += value.ToString("X");
+            }
+            return hexData;
+        }
+
+
     }
 }

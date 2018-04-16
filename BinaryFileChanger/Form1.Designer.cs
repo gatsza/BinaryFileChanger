@@ -52,7 +52,7 @@
             this.add1.TabIndex = 6;
             this.add1.Text = "+";
             this.add1.UseVisualStyleBackColor = true;
-            this.add1.Click += new System.EventHandler(this.add_Click);
+            this.add1.Click += new System.EventHandler(this.addButton_Click);
             // 
             // browserButton
             // 
@@ -86,7 +86,7 @@
             this.SaveButton.TabIndex = 4;
             this.SaveButton.Text = "Save File";
             this.SaveButton.UseVisualStyleBackColor = true;
-            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
+            this.SaveButton.Click += new System.EventHandler(this.saveButton_Click);
             // 
             // Panel1
             // 
