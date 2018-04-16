@@ -42,6 +42,7 @@
             this.excel = new System.Windows.Forms.Button();
             this.writeQR = new System.Windows.Forms.Button();
             this.readQR = new System.Windows.Forms.Button();
+            this.readNextExcel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // add1
@@ -98,11 +99,11 @@
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
-            this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 65F));
+            this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 66F));
             this.Panel1.Location = new System.Drawing.Point(15, 125);
             this.Panel1.Name = "Panel1";
             this.Panel1.RowCount = 1;
-            this.Panel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
+            this.Panel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 34F));
             this.Panel1.Size = new System.Drawing.Size(471, 32);
             this.Panel1.TabIndex = 1;
             // 
@@ -171,28 +172,40 @@
             // writeQR
             // 
             this.writeQR.Enabled = false;
-            this.writeQR.Location = new System.Drawing.Point(136, 58);
+            this.writeQR.Location = new System.Drawing.Point(266, 58);
             this.writeQR.Name = "writeQR";
             this.writeQR.Size = new System.Drawing.Size(75, 23);
             this.writeQR.TabIndex = 16;
-            this.writeQR.Text = "QR kód írás";
+            this.writeQR.Text = "QR write";
             this.writeQR.UseVisualStyleBackColor = true;
+            this.writeQR.Click += new System.EventHandler(this.writeQR_Click);
             // 
             // readQR
             // 
             this.readQR.Enabled = false;
-            this.readQR.Location = new System.Drawing.Point(267, 58);
+            this.readQR.Location = new System.Drawing.Point(375, 58);
             this.readQR.Name = "readQR";
             this.readQR.Size = new System.Drawing.Size(93, 23);
             this.readQR.TabIndex = 17;
-            this.readQR.Text = "QR kód olvasás";
+            this.readQR.Text = "QR read";
             this.readQR.UseVisualStyleBackColor = true;
+            // 
+            // readNextExcel
+            // 
+            this.readNextExcel.Location = new System.Drawing.Point(127, 58);
+            this.readNextExcel.Name = "readNextExcel";
+            this.readNextExcel.Size = new System.Drawing.Size(109, 23);
+            this.readNextExcel.TabIndex = 18;
+            this.readNextExcel.Text = "Next From Excel";
+            this.readNextExcel.UseVisualStyleBackColor = true;
+            this.readNextExcel.Click += new System.EventHandler(this.readNextExcel_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(517, 240);
+            this.Controls.Add(this.readNextExcel);
             this.Controls.Add(this.readQR);
             this.Controls.Add(this.writeQR);
             this.Controls.Add(this.excel);
@@ -234,6 +247,7 @@
         private System.Windows.Forms.Button excel;
         private System.Windows.Forms.Button writeQR;
         private System.Windows.Forms.Button readQR;
+        private System.Windows.Forms.Button readNextExcel;
     }
 }
 

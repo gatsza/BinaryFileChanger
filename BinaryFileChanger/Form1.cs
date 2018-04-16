@@ -22,7 +22,10 @@ namespace WindowsFormsApp1
 
         private byte[] buffer = new byte[128 * 1024];
         private int bytesread = 0;
-        String path;
+        string path;
+        string pathOfExcel;
+        int lastRow = 0;
+
         private string[] prevAdrType = new string[10];
         private string[] prevDataType = new string[10];
 
@@ -467,115 +470,185 @@ namespace WindowsFormsApp1
 
         private void saveButton_Click(object sender, EventArgs e)
         {
-            if (fileName.Text == "")
-            {
-                MessageBox.Show("Nincs megadva fájlnév!");
-                return;
-            }
+            Button button = sender as Button;
+            String name = button.Name;
 
-            try
+            if (button == null)
+                return;
+
+            if (name.Contains("save"))
             {
-                if (!Directory.Exists(path + "\\binary\\"))
+                if (fileName.Text == "")
                 {
-                    Directory.CreateDirectory(path + "\\binary\\");
+                    MessageBox.Show("Nincs megadva fájlnév!");
+                    return;
                 }
 
-
-                FileStream fs = File.Create(path + "\\binary\\" + fileName.Text + ".bin", 2048, FileOptions.None);
-                BinaryWriter bw = new BinaryWriter(fs);
-
-                changeFile();
-                bw.Write(buffer);
-
-                bw.Close();
-                fs.Close();
-
-                MessageBox.Show("Sikerült a fájl megírása.");
+                try
+                {
+                    if (!Directory.Exists(path + "\\binary\\"))
+                    {
+                        Directory.CreateDirectory(path + "\\binary\\");
+                    }
 
 
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: Could not write the file to disk. Original error: " + ex.Message);
+                    FileStream fs = File.Create(path + "\\binary\\" + fileName.Text + ".bin", 2048, FileOptions.None);
+                    BinaryWriter bw = new BinaryWriter(fs);
 
+                    changeFile();
+                    bw.Write(buffer);
+
+                    bw.Close();
+                    fs.Close();
+
+                    MessageBox.Show("Sikerült a fájl megírása.");
+
+
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error: Could not write the file to disk. Original error: " + ex.Message);
+
+                }
             }
 
         }
 
         private void excel_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            Excel.Application xlApp = new Excel.Application();
+            Button button = sender as Button;
+            String name = button.Name;
 
+            if (button == null)
+                return;
 
-            openFileDialog1.InitialDirectory = "c:\\";
-            openFileDialog1.Filter = "excel documentum (.xls)|*.xls|excel documentum (.xlsx)|*.xlsx";
-            openFileDialog1.FilterIndex = 2;
-            openFileDialog1.RestoreDirectory = true;
-
-            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            if (name.Contains("excel"))
             {
-                try
-                { 
-                    Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(openFileDialog1.FileName);
-                    if(xlWorkbook != null)
-                    {
-                        Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
-                        Excel.Range xlRange = xlWorksheet.UsedRange;
-                       
-                        readExcel(xlRange);
+                OpenFileDialog openFileDialog1 = new OpenFileDialog();
 
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        
-                        Marshal.ReleaseComObject(xlRange);
-                        Marshal.ReleaseComObject(xlWorksheet);
-                        
-                        xlWorkbook.Close();
-                        Marshal.ReleaseComObject(xlWorkbook);
-                        
-                        xlApp.Quit();
-                        Marshal.ReleaseComObject(xlApp);                       
-                    }
+                openFileDialog1.InitialDirectory = "c:\\";
+                openFileDialog1.Filter = "excel documentum (.xls)|*.xls|excel documentum (.xlsx)|*.xlsx";
+                openFileDialog1.FilterIndex = 2;
+                openFileDialog1.RestoreDirectory = true;
 
-               }
-                catch (Exception ex)
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+                    openExcel(openFileDialog1.FileName);
                 }
             }
         }
-        // Other functions
-        private void readExcel(Excel.Range xlRange)
+
+        private void readNextExcel_Click(object sender, EventArgs e)
         {
+            Button button = sender as Button;
+            String name = button.Name;
+
+            if (button == null)
+                return;
+
+            if (name.Contains("NextExcel"))
+            {
+                while (Panel1.RowCount > 1)
+                    deleteRow(Panel1.RowCount - 1);
+
+                openExcel(pathOfExcel);
+            }
+        }
+
+        private void writeQR_Click(object sender, EventArgs e)
+        {
+
+        }
+        // Other functions
+
+        private void openExcel(string address)
+        {
+            Excel.Application xlApp = new Excel.Application();
+
+            try
+            {
+                Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(address);
+                if (xlWorkbook != null)
+                {
+                    
+
+                    Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
+                    Excel.Range xlRange = xlWorksheet.UsedRange;
+
+                    if(address == pathOfExcel)
+                        readExcel(xlRange, lastRow);
+                    else
+                        readExcel(xlRange, 0);                   
+
+                    pathOfExcel = address;
+
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+
+                    Marshal.ReleaseComObject(xlRange);
+                    Marshal.ReleaseComObject(xlWorksheet);
+
+                    xlWorkbook.Close();
+                    Marshal.ReleaseComObject(xlWorkbook);
+
+                    xlApp.Quit();
+                    Marshal.ReleaseComObject(xlApp);
+
+                MessageBox.Show("Beolvasás sikeres");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
+
+            }
+        }
+
+        private void readExcel(Excel.Range xlRange, int delta )
+        {
+            int i = delta;
+            int j = 0;
             int rowCount = xlRange.Rows.Count;
             int colCount = xlRange.Columns.Count;
 
-            if (colCount > 6 & xlRange.Cells[1, 1] == null & xlRange.Cells[1, 1].Value2 == null)
+            if (colCount > 6 & xlRange.Cells[i + 1, 1] == null & xlRange.Cells[i + 1, 1].Value2 == null)
                 return;
 
-            fileName.Text = xlRange.Cells[1, 1].Value2.ToString();
-            for(int i = 1; i<=rowCount;i++)
+            fileName.Text = xlRange.Cells[i + 1, 1].Value.ToString();
+
+            do
             {
-                if (Panel1.RowCount < i)
+                i++;
+                MessageBox.Show(i.ToString());
+                if (Panel1.RowCount < j + 1)
                     addRow();
 
-                if (xlRange.Cells[i, 3] != null & xlRange.Cells[i, 3].Value2 != null)
-                    addressType[i - 1].SelectedItem = xlRange.Cells[i, 3].Value2.ToString();
+                if (xlRange.Cells[i, 3] != null & xlRange.Cells[i, 3].Value != null)
+                    addressType[j].SelectedItem = xlRange.Cells[i, 3].Value.ToString();
+                else
+                    addressType[j].SelectedItem = "HEX";
 
-                if (xlRange.Cells[i, 2] != null & xlRange.Cells[i, 2].Value2 != null)
-                    addressText[i - 1].Text = xlRange.Cells[i, 2].Value2.ToString();
+                if (xlRange.Cells[i, 2] != null & xlRange.Cells[i, 2].Value != null)
+                    addressText[j].Text = xlRange.Cells[i, 2].Value.ToString();
+                else
+                    continue;               
 
-                if (xlRange.Cells[i, 5] != null & xlRange.Cells[i, 5].Value2 != null)
-                    dataType[i - 1].SelectedItem = xlRange.Cells[i, 5].Value2.ToString();
+                if (xlRange.Cells[i, 5] != null & xlRange.Cells[i, 5].Value != null)
+                    dataType[j].SelectedItem = xlRange.Cells[i, 5].Value.ToString();
+                else
+                    dataType[j].SelectedItem = "HEX";
 
-                if (xlRange.Cells[i, 4] != null & xlRange.Cells[i, 4].Value2 != null)
-                    dataText[i - 1].Text = xlRange.Cells[i, 4].Value2.ToString(); 
+                if (xlRange.Cells[i, 4] != null & xlRange.Cells[i, 4].Value != null)
+                    dataText[j].Text = xlRange.Cells[i, 4].Value.ToString(); 
 
-                if (xlRange.Cells[i, 6] != null & xlRange.Cells[i, 6].Value2 != null)
-                    lenText[i - 1].Text = xlRange.Cells[i, 6].Value2.ToString();
-            }
+                if (xlRange.Cells[i, 6] != null & xlRange.Cells[i, 6].Value != null)
+                    lenText[j].Text = xlRange.Cells[i, 6].Value.ToString();
 
+                j++;
+            } while (i < rowCount & j < 10 & xlRange.Cells[i + 1, 1].Value == null);
+
+            lastRow = i;
         }
 
         private string WrongValue(Match m)
@@ -812,6 +885,6 @@ namespace WindowsFormsApp1
                 hexData += value.ToString("X");
             }
             return hexData;
-        }
+        }  
     }
 }
