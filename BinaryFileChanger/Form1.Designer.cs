@@ -98,11 +98,11 @@
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
-            this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 59F));
+            this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 65F));
             this.Panel1.Location = new System.Drawing.Point(15, 125);
             this.Panel1.Name = "Panel1";
             this.Panel1.RowCount = 1;
-            this.Panel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.Panel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 33F));
             this.Panel1.Size = new System.Drawing.Size(471, 32);
             this.Panel1.TabIndex = 1;
             // 
@@ -170,6 +170,7 @@
             // 
             // writeQR
             // 
+            this.writeQR.Enabled = false;
             this.writeQR.Location = new System.Drawing.Point(136, 58);
             this.writeQR.Name = "writeQR";
             this.writeQR.Size = new System.Drawing.Size(75, 23);
@@ -179,6 +180,7 @@
             // 
             // readQR
             // 
+            this.readQR.Enabled = false;
             this.readQR.Location = new System.Drawing.Point(267, 58);
             this.readQR.Name = "readQR";
             this.readQR.Size = new System.Drawing.Size(93, 23);

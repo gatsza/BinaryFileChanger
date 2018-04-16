@@ -426,16 +426,14 @@ namespace WindowsFormsApp1
                             }
                             break;
                     }
-
                     prevDataType[lineNum] = combo.SelectedItem.ToString();
                 }
                 catch (OverflowException)
                 {
-                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban az adatnál");
+                    MessageBox.Show("Túl nagy értéket adtál meg a " + (lineNum + 1) + ". sorban az adatnál, ezt már nem lehet átváltani " + combo.SelectedItem + "-be.");
                     combo.SelectedItem = prevDataType[lineNum];
                 }
             }
-
         }
 
         private void delButton_Click(object sender, EventArgs e)
@@ -457,28 +455,14 @@ namespace WindowsFormsApp1
 
         private void addButton_Click(object sender, EventArgs e)
         {
-            if (Panel1.RowCount != 10)
-            {
+            Button button = sender as Button;
+            String name = button.Name;
 
-                int rowNum = Panel1.RowCount;
+            if (button == null)
+                return;
 
-                rowChange('+');
-
-                new_delBut(rowNum);
-                new_addrText(rowNum);
-                new_addrType(rowNum);
-                new_lenText(rowNum);
-                new_dataText(rowNum);
-                new_dataType(rowNum);
-
-                Panel1.Controls.Add(delButt[rowNum], 0, rowNum);
-                Panel1.Controls.Add(addressText[rowNum], 1, rowNum);
-                Panel1.Controls.Add(addressType[rowNum], 2, rowNum);
-                Panel1.Controls.Add(lenText[rowNum], 3, rowNum);
-                Panel1.Controls.Add(dataText[rowNum], 4, rowNum);
-                Panel1.Controls.Add(dataType[rowNum], 5, rowNum);
-            }
-
+            if (name.Contains("add"))
+                addRow();
         }
 
         private void saveButton_Click(object sender, EventArgs e)
@@ -538,27 +522,23 @@ namespace WindowsFormsApp1
                     {
                         Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
                         Excel.Range xlRange = xlWorksheet.UsedRange;
-
-                        int rowCount = xlRange.Rows.Count;
-                        int colCount = xlRange.Columns.Count;
-
-                        MessageBox.Show("Megnyitás sikeres.");
+                       
+                        readExcel(xlRange);
 
                         GC.Collect();
                         GC.WaitForPendingFinalizers();
-
+                        
                         Marshal.ReleaseComObject(xlRange);
                         Marshal.ReleaseComObject(xlWorksheet);
-
+                        
                         xlWorkbook.Close();
                         Marshal.ReleaseComObject(xlWorkbook);
-
+                        
                         xlApp.Quit();
-                        Marshal.ReleaseComObject(xlApp);
-
+                        Marshal.ReleaseComObject(xlApp);                       
                     }
 
-                }
+               }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error: Could not read file from disk. Original error: " + ex.Message);
@@ -566,6 +546,37 @@ namespace WindowsFormsApp1
             }
         }
         // Other functions
+        private void readExcel(Excel.Range xlRange)
+        {
+            int rowCount = xlRange.Rows.Count;
+            int colCount = xlRange.Columns.Count;
+
+            if (colCount > 6 & xlRange.Cells[1, 1] == null & xlRange.Cells[1, 1].Value2 == null)
+                return;
+
+            fileName.Text = xlRange.Cells[1, 1].Value2.ToString();
+            for(int i = 1; i<=rowCount;i++)
+            {
+                if (Panel1.RowCount < i)
+                    addRow();
+
+                if (xlRange.Cells[i, 3] != null & xlRange.Cells[i, 3].Value2 != null)
+                    addressType[i - 1].SelectedItem = xlRange.Cells[i, 3].Value2.ToString();
+
+                if (xlRange.Cells[i, 2] != null & xlRange.Cells[i, 2].Value2 != null)
+                    addressText[i - 1].Text = xlRange.Cells[i, 2].Value2.ToString();
+
+                if (xlRange.Cells[i, 5] != null & xlRange.Cells[i, 5].Value2 != null)
+                    dataType[i - 1].SelectedItem = xlRange.Cells[i, 5].Value2.ToString();
+
+                if (xlRange.Cells[i, 4] != null & xlRange.Cells[i, 4].Value2 != null)
+                    dataText[i - 1].Text = xlRange.Cells[i, 4].Value2.ToString(); 
+
+                if (xlRange.Cells[i, 6] != null & xlRange.Cells[i, 6].Value2 != null)
+                    lenText[i - 1].Text = xlRange.Cells[i, 6].Value2.ToString();
+            }
+
+        }
 
         private string WrongValue(Match m)
         {
@@ -601,7 +612,7 @@ namespace WindowsFormsApp1
                 Panel1.Controls.RemoveByKey("dataText" + (panelSize - 1).ToString());
                 Panel1.Controls.RemoveByKey("dataType" + (panelSize - 1).ToString());
 
-                rowChange('-');
+                changeRow('-');
             }
             else
             {
@@ -613,7 +624,7 @@ namespace WindowsFormsApp1
             }
         }
 
-        private void rowChange(char direction)
+        private void changeRow(char direction)
         {
             int directionSign = 0;
             if (direction == '+')
@@ -632,6 +643,31 @@ namespace WindowsFormsApp1
             Panel1.RowCount += 1 * directionSign;
             Panel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 31));
             Panel1.Size = new Size(Panel1.Size.Width, Panel1.Size.Height + 32 * directionSign);
+        }
+
+        private void addRow()
+        {
+            if (Panel1.RowCount != 10)
+            {
+
+                int rowNum = Panel1.RowCount;
+
+                changeRow('+');
+
+                new_delBut(rowNum);
+                new_addrText(rowNum);
+                new_addrType(rowNum);
+                new_lenText(rowNum);
+                new_dataText(rowNum);
+                new_dataType(rowNum);
+
+                Panel1.Controls.Add(delButt[rowNum], 0, rowNum);
+                Panel1.Controls.Add(addressText[rowNum], 1, rowNum);
+                Panel1.Controls.Add(addressType[rowNum], 2, rowNum);
+                Panel1.Controls.Add(lenText[rowNum], 3, rowNum);
+                Panel1.Controls.Add(dataText[rowNum], 4, rowNum);
+                Panel1.Controls.Add(dataType[rowNum], 5, rowNum);
+            }
         }
 
         private void changeFile()
@@ -777,7 +813,5 @@ namespace WindowsFormsApp1
             }
             return hexData;
         }
-
-
     }
 }
