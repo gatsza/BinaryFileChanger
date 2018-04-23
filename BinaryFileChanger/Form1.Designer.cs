@@ -48,6 +48,7 @@
             this.inputDiv = new System.Windows.Forms.ComboBox();
             this.startPic = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -104,7 +105,7 @@
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
             this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 120F));
-            this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
+            this.Panel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 71F));
             this.Panel1.Location = new System.Drawing.Point(15, 125);
             this.Panel1.Name = "Panel1";
             this.Panel1.RowCount = 1;
@@ -166,7 +167,7 @@
             // 
             // excel
             // 
-            this.excel.Location = new System.Drawing.Point(15, 58);
+            this.excel.Location = new System.Drawing.Point(15, 69);
             this.excel.Name = "excel";
             this.excel.Size = new System.Drawing.Size(75, 23);
             this.excel.TabIndex = 15;
@@ -176,7 +177,7 @@
             // 
             // writeQR
             // 
-            this.writeQR.Location = new System.Drawing.Point(266, 58);
+            this.writeQR.Location = new System.Drawing.Point(267, 69);
             this.writeQR.Name = "writeQR";
             this.writeQR.Size = new System.Drawing.Size(75, 23);
             this.writeQR.TabIndex = 16;
@@ -186,7 +187,7 @@
             // 
             // readQR
             // 
-            this.readQR.Location = new System.Drawing.Point(375, 58);
+            this.readQR.Location = new System.Drawing.Point(375, 69);
             this.readQR.Name = "readQR";
             this.readQR.Size = new System.Drawing.Size(93, 23);
             this.readQR.TabIndex = 17;
@@ -196,7 +197,7 @@
             // 
             // readNextExcel
             // 
-            this.readNextExcel.Location = new System.Drawing.Point(127, 58);
+            this.readNextExcel.Location = new System.Drawing.Point(129, 69);
             this.readNextExcel.Name = "readNextExcel";
             this.readNextExcel.Size = new System.Drawing.Size(109, 23);
             this.readNextExcel.TabIndex = 18;
@@ -235,11 +236,21 @@
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 55);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(78, 13);
+            this.label2.TabIndex = 22;
+            this.label2.Text = "Fájl műveletek:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(836, 280);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.startPic);
             this.Controls.Add(this.inputDiv);
             this.Controls.Add(this.pictureBox1);
@@ -292,6 +303,7 @@
         private System.Windows.Forms.ComboBox inputDiv;
         private System.Windows.Forms.Button startPic;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Label label2;
     }
 }
 
